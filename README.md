@@ -11,8 +11,8 @@
 
 - ✅ 单个/多账号自动签到
 - ✅ 多种机器人通知（可选）
-- ✅ linux.do 登录认证 (with Cloudflare bypass)
-- ✅ github 登录认证 (with OTP)
+- ✅ linux.do 登录认证
+- ✅ github 登录认证
 
 ## 使用方法
 
@@ -52,30 +52,28 @@
       "provider": "agentrouter",
       "linux.do": {
         "username": "user2",
-        "password": "pass2",
-        "use_camoufox": false
+        "password": "pass2",       
       }
     }
   ]
 ```
 
 **字段说明**：
-
 - `name` (可选)：自定义账号显示名称，用于通知和日志中标识账号
 - `provider` (可选)：供应商，内置 `anyrouter`、`agentrouter`, 默认使用 `anyrouter`
 - `cookies`(可选)：用于身份验证的 cookies 数据
 - `api_user`(cookies 设置时必需)：用于请求头的 new-api-user 参数
 - `linux.do`(可选)：用于登录身份验证
-  - `username`: 用户名
-  - `password`: 密码
-  - `use_camoufox`: 使用 Camoufox, 默认为 `true`
+  * `username`: 用户名
+  * `password`: 密码
 - `github`(可选)：用于登录身份验证
-  - `username`: 用户名
-  - `password`: 密码
+  * `username`: 用户名
+  * `password`: 密码
 
 > 如果未提供 `name` 字段，会使用 `Account 1`、`Account 2` 等默认名称。  
-> 配置中 `cookies`、`github`、`linux.do` 必须至少配置 1 个。  
+> 配置中 `cookies`、`github`、`linux.do` 必须至少配置1个。  
 > 可通过`PROVIDERS`环境添加自定义供应商
+
 
 #### 如何获取 cookies 与 api_user 的值。
 
@@ -83,11 +81,11 @@
 
 ![获取 cookies](./assets/request-cookie-session.png)
 
-通过 F12 工具，切到 Application 面板，面板，Local storage -> user 对象中的 id 字段。
+通过 F12 工具，切到 Application 面板，面板，Local storage -> user 对象中的id字段。
 
 ![获取 api_user](./assets/request-api-user.png)
 
-#### `GitHub` 在新设备上登录会有两次验证
+ #### `GitHub` 在新设备上登录会有两次验证
 
 通过打印日志中链接打开并输入验证码。
 
@@ -112,49 +110,39 @@
 
 ## 执行时间
 
-- 脚本每 8 小时执行一次（1. action 无法准确触发，基本延时 1~1.5h；2. 目前观测到 newapi.ai 的签到是每 24h 而不是零点就可签到）
+- 脚本每8小时执行一次（1. action 无法准确触发，基本延时 1~1.5h；2. 目前观测到 newapi.ai 的签到是每 24h 而不是零点就可签到）
 - 你也可以随时手动触发签到
 
 ## 注意事项
 
 - 可以在 Actions 页面查看详细的运行日志
 - 支持部分账号失败，只要有账号成功签到，整个任务就不会失败
-- `GitHub` 新设备 OTP 验证，注意日志中的链接或配置了通知注意接收的链接，访问链接进行输入验证码
-- `Cloudflare` 验证需要使用 [Camoufox](https://github.com/daijro/camoufox?tab=readme-ov-file#tests) 执行
 
 ## 开启通知
 
 脚本支持多种通知方式，可以通过配置以下环境变量开启，如果 `webhook` 有要求安全设置，例如钉钉，可以在新建机器人时选择自定义关键词，填写 `newapi.ai`。
 
 ### 邮箱通知
-
 - `EMAIL_USER`: 发件人邮箱地址
 - `EMAIL_PASS`: 发件人邮箱密码/授权码
-- `CUSTOM_SMTP_SERVER`: 自定义发件人 SMTP 服务器(可选)
+- `CUSTOM_SMTP_SERVER`: 自定义发件人SMTP服务器(可选)
 - `EMAIL_TO`: 收件人邮箱地址
-
 ### 钉钉机器人
-
 - `DINGDING_WEBHOOK`: 钉钉机器人的 Webhook 地址
 
 ### 飞书机器人
-
 - `FEISHU_WEBHOOK`: 飞书机器人的 Webhook 地址
 
 ### 企业微信机器人
-
 - `WEIXIN_WEBHOOK`: 企业微信机器人的 Webhook 地址
 
 ### PushPlus 推送
-
 - `PUSHPLUS_TOKEN`: PushPlus 的 Token
 
-### Server 酱
-
-- `SERVERPUSHKEY`: Server 酱的 SendKey
+### Server酱
+- `SERVERPUSHKEY`: Server酱的 SendKey
 
 配置步骤：
-
 1. 在仓库的 Settings -> Environments -> production -> Environment secrets 中添加上述环境变量
 2. 每个通知方式都是独立的，可以只配置你需要的推送方式
 3. 如果某个通知方式配置不正确或未配置，脚本会自动跳过该通知方式
