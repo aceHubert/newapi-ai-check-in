@@ -17,10 +17,10 @@ from checkin import CheckIn
 # Add parent directory to Python path to find utils module
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+load_dotenv(override=True)
+
 from utils.notify import notify
 from utils.balance_hash import load_balance_hash, save_balance_hash
-
-load_dotenv(override=True)
 
 CHECKIN_HASH_FILE = "balance_hash_996.txt"
 

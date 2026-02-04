@@ -9,12 +9,13 @@ import json
 import sys
 from datetime import datetime
 from dotenv import load_dotenv
+
+load_dotenv(override=True)
+
 from utils.config import AppConfig
 from utils.notify import notify
 from utils.balance_hash import load_balance_hash, save_balance_hash
 from checkin import CheckIn
-
-load_dotenv(override=True)
 
 BALANCE_HASH_FILE = "balance_hash.txt"
 

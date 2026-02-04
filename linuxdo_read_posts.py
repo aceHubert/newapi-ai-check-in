@@ -11,6 +11,9 @@ import sys
 import random
 from datetime import datetime
 from dotenv import load_dotenv
+
+load_dotenv(override=True)
+
 from camoufox.async_api import AsyncCamoufox
 from utils.browser_utils import take_screenshot, save_page_content_to_file
 from utils.notify import notify
@@ -458,7 +461,6 @@ def load_linuxdo_accounts() -> list[dict]:
 
 async def main():
     """主函数"""
-    load_dotenv(override=True)
 
     print("🚀 Linux.do read posts script started")
     print(f'🕒 Execution time: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
