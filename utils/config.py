@@ -16,19 +16,19 @@ from utils.get_cdk import (
 )
 
 
-# 前向声明 AccountConfig 类型，用于类型注解
+# 前向声明 AccountConfig 类型,用于类型注解
 # 实际的 AccountConfig 类在后面定义
-# 定义 CDK 获取函数的类型：接收 AccountConfig 参数，返回 Generator[tuple[bool, dict], None, None]
+# 定义 CDK 获取函数的类型：接收 AccountConfig 参数,返回 Generator[tuple[bool, dict], None, None]
 # 每次 yield 一个元组：
-#   - (True, {"code": "xxx"}) 表示成功获取 CDK，code 可为空字符串表示不需要充值
-#   - (False, {"error": "error message"}) 表示失败，调用方应停止 topup
+#   - (True, {"code": "xxx"}) 表示成功获取 CDK,code 可为空字符串表示不需要充值
+#   - (False, {"error": "error message"}) 表示失败,调用方应停止 topup
 CdkGetterFunc = Callable[["AccountConfig"], Generator[tuple[bool, dict], None, None]]
 AsyncCdkGetterFunc = Callable[["AccountConfig"], AsyncGenerator[tuple[bool, dict], None]]
 
-# 签到状态查询函数类型：接收 ProviderConfig 和 AccountConfig 参数，返回 bool（今日是否已签到）
+# 签到状态查询函数类型：接收 ProviderConfig 和 AccountConfig 参数,返回 bool（今日是否已签到）
 # 函数签名: (provider_config, account_config, cookies, headers) -> bool
 # 代理配置从 account_config.proxy 或 account_config.get("global_proxy") 获取
-# headers 中已包含 api_user_key，无需单独传递 api_user
+# headers 中已包含 api_user_key,无需单独传递 api_user
 CheckInStatusFunc = Callable[["ProviderConfig", "AccountConfig", dict, dict], bool]
 
 
@@ -42,17 +42,17 @@ class ProviderConfig:
     status_path: str = "/api/status"
     auth_state_path: str = "api/oauth/state"
     check_in_path: str | Callable[[str, str | int], str] | None = None
-    check_in_status: bool | CheckInStatusFunc = False  # 签到状态查询：True=标准检查，False=不检查，Callable=自定义函数
+    check_in_status: bool | CheckInStatusFunc = False  # 签到状态查询：True=标准检查,False=不检查,Callable=自定义函数
     user_info_path: str = "/api/user/self"
     topup_path: str | None = "/api/user/topup"
     get_cdk: CdkGetterFunc | AsyncCdkGetterFunc | None = None
     api_user_key: str = "new-api-user"
     github_client_id: str | None = None
     github_auth_path: str = "/api/oauth/github"
-    github_auth_redirect_path: str = "/oauth/**"  # OAuth 回调路径匹配模式，支持通配符
+    github_auth_redirect_path: str = "/oauth/**"  # OAuth 回调路径匹配模式,支持通配符
     linuxdo_client_id: str | None = None
     linuxdo_auth_path: str = "/api/oauth/linuxdo"
-    linuxdo_auth_redirect_path: str = "/oauth/**"  # OAuth 回调路径匹配模式，支持通配符
+    linuxdo_auth_redirect_path: str = "/oauth/**"  # OAuth 回调路径匹配模式,支持通配符
     aliyun_captcha: bool = False
     bypass_method: Literal["waf_cookies", "cf_clearance"] | None = None
     isCustomize: bool = False  # 是否为自定义 provider（从环境变量加载）
@@ -80,7 +80,7 @@ class ProviderConfig:
             check_in_status=data.get("check_in_status", False),
             user_info_path=data.get("user_info_path", "/api/user/self"),
             topup_path=data.get("topup_path", "/api/user/topup"),
-            get_cdk=data.get("get_cdk"),  # 函数类型无法从 JSON 解析，需要代码中设置
+            get_cdk=data.get("get_cdk"),  # 函数类型无法从 JSON 解析,需要代码中设置
             api_user_key=data.get("api_user_key", "new-api-user"),
             github_client_id=data.get("github_client_id"),
             github_auth_path=data.get("github_auth_path", "/api/oauth/github"),
@@ -108,7 +108,7 @@ class ProviderConfig:
     def needs_manual_topup(self) -> bool:
         """判断是否需要手动执行充值（通过 CDK）
 
-        当同时配置了 topup_path 和 get_cdk 时，需要执行 execute_topup
+        当同时配置了 topup_path 和 get_cdk 时,需要执行 execute_topup
         """
         return self.topup_path is not None and self.get_cdk is not None
 
@@ -127,18 +127,18 @@ class ProviderConfig:
     def get_check_in_url(self, user_id: str | int) -> str | None:
         """获取签到 URL
 
-        如果 check_in_path 是函数，则调用函数生成带签名的 URL
+        如果 check_in_path 是函数,则调用函数生成带签名的 URL
 
         Args:
             user_id: 用户 ID
 
         Returns:
-            str | None: 签到 URL，如果不需要签到则返回 None
+            str | None: 签到 URL,如果不需要签到则返回 None
         """
         if not self.check_in_path:
             return None
 
-        # 如果是函数，则调用函数生成 URL
+        # 如果是函数,则调用函数生成 URL
         if callable(self.check_in_path):
             return self.check_in_path(self.origin, user_id)
 
@@ -149,8 +149,8 @@ class ProviderConfig:
         """获取签到状态查询函数
 
         Returns:
-            如果 check_in_status 为 True，返回标准的 newapi_check_in_status 函数
-            如果 check_in_status 为 callable，返回该函数
+            如果 check_in_status 为 True,返回标准的 newapi_check_in_status 函数
+            如果 check_in_status 为 callable,返回该函数
             否则返回 None
         """
         if self.check_in_status is True:
@@ -176,7 +176,7 @@ class ProviderConfig:
     def get_github_auth_redirect_pattern(self) -> str:
         """获取 GitHub OAuth 回调 URL 匹配模式
 
-        返回用于 page.wait_for_url() 的匹配模式，支持通配符 **
+        返回用于 page.wait_for_url() 的匹配模式,支持通配符 **
         例如: "**https://example.com/oauth/**" 或 "**https://example.com/oauth-redirect.html**"
         """
         return f"**{self.origin}{self.github_auth_redirect_path}"
@@ -188,7 +188,7 @@ class ProviderConfig:
     def get_linuxdo_auth_redirect_pattern(self) -> str:
         """获取 LinuxDo OAuth 回调 URL 匹配模式
 
-        返回用于 page.wait_for_url() 的匹配模式，支持通配符 **
+        返回用于 page.wait_for_url() 的匹配模式,支持通配符 **
         例如: "**https://example.com/oauth/**" 或 "**https://example.com/oauth-redirect.html**"
         """
         return f"**{self.origin}{self.linuxdo_auth_redirect_path}"
@@ -263,12 +263,12 @@ class AccountConfig:
     def get_display_name(self, index: int = 0) -> str:
         """获取显示名称
 
-        如果设置了 name 则返回 name，否则返回 "{provider} {index + 1}"
+        如果设置了 name 则返回 name,否则返回 "{provider} {index + 1}"
         """
         return self.name if self.name else f"{self.provider} {index + 1}"
 
     def get(self, key: str, default=None):
-        """获取配置值，优先从已知属性获取，否则从 extra 中获取"""
+        """获取配置值,优先从已知属性获取,否则从 extra 中获取"""
         if hasattr(self, key) and key != "extra":
             value = getattr(self, key)
             return value if value is not None else default
@@ -297,11 +297,11 @@ class AppConfig:
         """从环境变量加载配置
 
         Args:
-            providers_env: 自定义 providers 配置的环境变量名称，默认为 "PROVIDERS"
-            accounts_env: 账号配置的环境变量名称，默认为 "ACCOUNTS"
-            linux_do_accounts_env: Linux.do 账号配置的环境变量名称，默认为 "ACCOUNTS_LINUX_DO"
-            github_accounts_env: GitHub 账号配置的环境变量名称，默认为 "ACCOUNTS_GITHUB"
-            proxy_env: 全局代理配置的环境变量名称，默认为 "PROXY"
+            providers_env: 自定义 providers 配置的环境变量名称,默认为 "PROVIDERS"
+            accounts_env: 账号配置的环境变量名称,默认为 "ACCOUNTS"
+            linux_do_accounts_env: Linux.do 账号配置的环境变量名称,默认为 "ACCOUNTS_LINUX_DO"
+            github_accounts_env: GitHub 账号配置的环境变量名称,默认为 "ACCOUNTS_GITHUB"
+            proxy_env: 全局代理配置的环境变量名称,默认为 "PROXY"
         """
         # 加载 providers 配置
         providers = cls._load_providers(providers_env)
@@ -339,7 +339,7 @@ class AppConfig:
     ) -> List["AccountConfig"]:
         """为自定义 provider 自动添加账号
 
-        检查所有 isCustomize=True 的 provider，如果 accounts 中没有对应的账号，
+        检查所有 isCustomize=True 的 provider,如果 accounts 中没有对应的账号,
         则根据 provider 的 linuxdo_client_id 或 github_client_id 自动创建账号
 
         Args:
@@ -359,7 +359,7 @@ class AppConfig:
             if not provider_config.isCustomize:
                 continue
 
-            # 如果该 provider 已经在 accounts 中，跳过
+            # 如果该 provider 已经在 accounts 中,跳过
             if provider_name in existing_providers:
                 print(f"ℹ️ Custom provider '{provider_name}' already has account(s), skipping auto-add")
                 continue
@@ -407,7 +407,7 @@ class AppConfig:
             proxy_env: 环境变量名称
 
         Returns:
-            代理配置字典，如果未配置则返回 None
+            代理配置字典,如果未配置则返回 None
         """
         proxy_str = os.getenv(proxy_env)
         if not proxy_str:
@@ -419,7 +419,7 @@ class AppConfig:
             print(f"⚙️ Global proxy loaded from {proxy_env} environment variable (dict format)")
             return proxy
         except json.JSONDecodeError:
-            # 如果不是 JSON，则视为字符串
+            # 如果不是 JSON,则视为字符串
             proxy = {"server": proxy_str}
             print(f"⚙️ Global proxy loaded from {proxy_env} environment variable: {proxy_str}")
             return proxy
@@ -459,7 +459,7 @@ class AppConfig:
                 login_path="/login",
                 status_path="/api/status",
                 auth_state_path="/api/oauth/state",
-                check_in_path=None,  # 无需签到接口，查询用户信息时自动完成签到
+                check_in_path=None,  # 无需签到接口,查询用户信息时自动完成签到
                 check_in_status=False,
                 user_info_path="/api/user/self",
                 topup_path="/api/user/topup",
@@ -629,7 +629,7 @@ class AppConfig:
                 login_path="/login",
                 status_path="/api/status",
                 auth_state_path="/api/oauth/state",
-                check_in_path=None,  # 无签到接口，通过 luckydraw 获取 CDK 并 topup
+                check_in_path=None,  # 无签到接口,通过 luckydraw 获取 CDK 并 topup
                 check_in_status=False,
                 user_info_path="/api/user/self",
                 topup_path="/api/user/topup",
@@ -652,12 +652,12 @@ class AppConfig:
                 check_in_status=True,  # 使用标准签到状态查询
                 user_info_path="/api/user/self",
                 topup_path="/api/user/topup",
-                get_cdk=无，
+                get_cdk=None,
                 api_user_key="new-api-user",
                 github_client_id=None,
                 github_auth_path="/api/oauth/github",
                 linuxdo_client_id="i7YfDNeJPx8Rbjx8JpD10YgQ2TVElVA4",
-                linuxdo_auth_path="/api/oauth/linuxdo"，
+                linuxdo_auth_path="/api/oauth/linuxdo",
                 aliyun_captcha=False,
                 bypass_method=None,
             ),
@@ -764,7 +764,7 @@ class AppConfig:
                 auth_state_path="/api/oauth/state",
                 check_in_path="/api/user/checkin",  # 标准 newapi checkin 接口
                 check_in_status=True,  # 使用标准签到状态查询
-                user_info_path="/api/user/self"，
+                user_info_path="/api/user/self",
                 topup_path="/api/user/topup",
                 get_cdk=None,
                 api_user_key="new-api-user",
@@ -906,16 +906,16 @@ class AppConfig:
         config_name: str,
         account_index: int,
     ) -> List["OAuthAccountConfig"] | None:
-        """解析 OAuth 配置，支持 bool、单个账号、多个账号三种格式
+        """解析 OAuth 配置,支持 bool、单个账号、多个账号三种格式
 
         Args:
-            config_value: 配置值，可以是 bool、dict 或 list
+            config_value: 配置值,可以是 bool、dict 或 list
             global_accounts: 全局 OAuth 账号列表
-            config_name: 配置名称（用于日志输出，如 "linux.do" 或 "github"）
+            config_name: 配置名称（用于日志输出,如 "linux.do" 或 "github"）
             account_index: 账号索引（用于日志输出）
 
         Returns:
-            OAuth 账号配置列表，如果配置无效则返回 None
+            OAuth 账号配置列表,如果配置无效则返回 None
         """
         # bool 类型：使用全局账号
         if isinstance(config_value, bool):
@@ -978,12 +978,12 @@ class AppConfig:
 
         Args:
             accounts_env: 环境变量名称或直接的 JSON 字符串值
-                         优先尝试作为环境变量名获取，获取不到则作为值使用
+                         优先尝试作为环境变量名获取,获取不到则作为值使用
             global_linux_do_accounts: 全局 Linux.do 账号列表
             global_github_accounts: 全局 GitHub 账号列表
 
         Returns:
-            账号配置列表，如果加载失败则返回空列表
+            账号配置列表,如果加载失败则返回空列表
         """
         # 从环境变量获取账号配置
         accounts_str = os.getenv(accounts_env)
@@ -1069,7 +1069,7 @@ class AppConfig:
                     )
                     continue
 
-                # 创建 AccountConfig，传入解析后的 OAuth 账号列表
+                # 创建 AccountConfig,传入解析后的 OAuth 账号列表
                 account_config = AccountConfig.from_dict(account, linux_do_accounts, github_accounts)
                 accounts.append(account_config)
 
