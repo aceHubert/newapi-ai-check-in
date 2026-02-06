@@ -13,7 +13,7 @@ Affs:
 - [KFC API](https://kfc-api.sxxe.net/register?aff=xPnf)
 - [B4U](https://b4u.qzz.io/register?aff=2NeT)
 - [Elysiver](https://elysiver.h-e.top/register?aff=5JsA)
-- [HotaruApi](https://api.hotaruapi.top/register?aff=q6xq)
+- [HotaruApi](https://hotaruapi.com/register?aff=q6xq)
 - [Neb](https://ai.zzhdsgsss.xyz/register?aff=tXKw)
 
 其它使用 `newapi.ai` 功能相似, 可自定义环境变量 `PROVIDERS` 支持或 `PR` 到仓库。
