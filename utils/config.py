@@ -652,7 +652,7 @@ class AppConfig:
                 check_in_status=True,  # 使用标准签到状态查询
                 user_info_path="/api/user/self",
                 topup_path="/api/user/topup",
-                get_cdk=无，
+                get_cdk=None,
                 api_user_key="new-api-user",
                 github_client_id=None,
                 github_auth_path="/api/oauth/github",
