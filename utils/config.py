@@ -606,7 +606,7 @@ class AppConfig:
             ),
             "hotaru": ProviderConfig(
                 name="hotaru",
-                origin="https://api.hotaruapi.top",
+                origin="https://hotaruapi.com",
                 login_path="/login",
                 status_path="/api/status",
                 auth_state_path="/api/oauth/state",
@@ -652,12 +652,12 @@ class AppConfig:
                 check_in_status=True,  # 使用标准签到状态查询
                 user_info_path="/api/user/self",
                 topup_path="/api/user/topup",
-                get_cdk=None,
+                get_cdk=无，
                 api_user_key="new-api-user",
                 github_client_id=None,
                 github_auth_path="/api/oauth/github",
                 linuxdo_client_id="i7YfDNeJPx8Rbjx8JpD10YgQ2TVElVA4",
-                linuxdo_auth_path="/api/oauth/linuxdo",
+                linuxdo_auth_path="/api/oauth/linuxdo"，
                 aliyun_captcha=False,
                 bypass_method=None,
             ),
