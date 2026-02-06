@@ -739,7 +739,7 @@ class AppConfig:
             ),
             "taizi": ProviderConfig(
                 name="taizi",
-                origin="https://taizi.api.51yp.de5.net",
+                origin="https://api.codeme.me",
                 login_path="/login",
                 status_path="/api/status",
                 auth_state_path="/api/oauth/state",
@@ -764,7 +764,7 @@ class AppConfig:
                 auth_state_path="/api/oauth/state",
                 check_in_path="/api/user/checkin",  # 标准 newapi checkin 接口
                 check_in_status=True,  # 使用标准签到状态查询
-                user_info_path="/api/user/self",
+                user_info_path="/api/user/self"，
                 topup_path="/api/user/topup",
                 get_cdk=None,
                 api_user_key="new-api-user",
