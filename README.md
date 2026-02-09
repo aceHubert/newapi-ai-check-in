@@ -4,17 +4,12 @@
 
 Affs:
 - [AnyRouter](https://anyrouter.top/register?aff=wJrb)
-- [AgentRouter](https://agentrouter.org/register?aff=wDU2)
 - [WONG](https://wzw.pp.ua/register?aff=N6Q9)
 - [薄荷 API](https://x666.me/register?aff=dgzt)
 - [Huan API](https://ai.huan666.de/register?aff=qEnU)
-- [我爱996](https://529961.com/register?aff=HV76)
-- [莹のAPI](https://api.wpgzs.top/register?aff=56zr)
 - [KFC API](https://kfc-api.sxxe.net/register?aff=xPnf)
-- [B4U](https://b4u.qzz.io/register?aff=2NeT)
+- [HotaruApi](https://hotaruapi.com/register?aff=q6xq)
 - [Elysiver](https://elysiver.h-e.top/register?aff=5JsA)
-- [HotaruApi](https://api.hotaruapi.top/register?aff=q6xq)
-- [Neb](https://ai.zzhdsgsss.xyz/register?aff=tXKw)
 
 其它使用 `newapi.ai` 功能相似, 可自定义环境变量 `PROVIDERS` 支持或 `PR` 到仓库。
 
@@ -152,7 +147,7 @@ Affs:
 #### 3.3 字段说明：
 
 - `name` (可选)：自定义账号显示名称，用于通知和日志中标识账号
-- `provider` (可选)：供应商，内置 `anyrouter`、`agentrouter`、`wong`、`huan666`、`x666`、`runawaytime`、`kfc`、`neb`、`elysiver`、`hotaru`、`b4u`、`lightllm`、`takeapi`、`thatapi`、`duckcoding`、`free-duckcoding`、`taizi`、`openai-test`、`icat`、`chengtx`，默认使用 `anyrouter`
+- `provider` (可选)：供应商，内置 `anyrouter`、`agentrouter`、`wong`、`huan666`、`x666`、`runawaytime`、`kfc`、`neb`、`elysiver`、`hotaru`、`b4u`、`lightllm`、`takeapi`、`thatapi`、`duckcoding`、`free-duckcoding`、`taizi`、`openai-test`、`chengtx`，默认使用 `anyrouter`
 - `proxy` (可选)：单个账号代理配置，支持 `http`、`socks5` 代理
 - `cookies`(可选)：用于身份验证的 cookies 数据
 - `api_user`(cookies 设置时必需)：用于请求头的 new-api-user 参数

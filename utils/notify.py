@@ -7,18 +7,49 @@ from curl_cffi import requests as curl_requests
 
 
 class NotificationKit:
-	def __init__(self):
-		self.email_user: str = os.getenv('EMAIL_USER', '')
-		self.email_pass: str = os.getenv('EMAIL_PASS', '')
-		self.email_to: str = os.getenv('EMAIL_TO', '')
-		self.smtp_server: str = os.getenv('CUSTOM_SMTP_SERVER', '')
-		self.pushplus_token = os.getenv('PUSHPLUS_TOKEN')
-		self.server_push_key = os.getenv('SERVERPUSHKEY')
-		self.dingding_webhook = os.getenv('DINGDING_WEBHOOK')
-		self.feishu_webhook = os.getenv('FEISHU_WEBHOOK')
-		self.weixin_webhook = os.getenv('WEIXIN_WEBHOOK')
-		self.telegram_bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
-		self.telegram_chat_id = os.getenv('TELEGRAM_CHAT_ID')
+	@property
+	def email_user(self) -> str:
+		return os.getenv('EMAIL_USER', '')
+
+	@property
+	def email_pass(self) -> str:
+		return os.getenv('EMAIL_PASS', '')
+
+	@property
+	def email_to(self) -> str:
+		return os.getenv('EMAIL_TO', '')
+
+	@property
+	def smtp_server(self) -> str:
+		return os.getenv('CUSTOM_SMTP_SERVER', '')
+
+	@property
+	def pushplus_token(self):
+		return os.getenv('PUSHPLUS_TOKEN')
+
+	@property
+	def server_push_key(self):
+		return os.getenv('SERVERPUSHKEY')
+
+	@property
+	def dingding_webhook(self):
+		return os.getenv('DINGDING_WEBHOOK')
+
+	@property
+	def feishu_webhook(self):
+		return os.getenv('FEISHU_WEBHOOK')
+
+	@property
+	def weixin_webhook(self):
+		return os.getenv('WEIXIN_WEBHOOK')
+
+	@property
+	def telegram_bot_token(self):
+		return os.getenv('TELEGRAM_BOT_TOKEN')
+
+	@property
+	def telegram_chat_id(self):
+		return os.getenv('TELEGRAM_CHAT_ID')
 
 	def send_email(self, title: str, content: str, msg_type: Literal['text', 'html'] = 'text'):
 		if not self.email_user or not self.email_pass or not self.email_to:
