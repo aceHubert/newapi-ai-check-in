@@ -39,26 +39,6 @@
         "aliyun_captcha": false,
         "bypass_method": null
     },
-    "claudex_us_ci": {
-        "origin": "https://claudex.us.ci",
-        "login_path": "/login",
-        "status_path": "/api/status",
-        "auth_state_path": "/api/oauth/state",
-        "check_in_path": "/api/user/checkin",
-        "check_in_status": true,
-        "user_info_path": "/api/user/self",
-        "topup_path": "/api/user/topup",
-        "get_cdk": null,
-        "api_user_key": "new-api-user",
-        "github_client_id": null,
-        "github_auth_path": "/api/oauth/github",
-        "github_auth_redirect_path": "/oauth/**",
-        "linuxdo_client_id": "0sXibywbilbjWF2ykFpiS0g8DE6EfObX",
-        "linuxdo_auth_path": "/api/oauth/linuxdo",
-        "linuxdo_auth_redirect_path": "/oauth/**",
-        "aliyun_captcha": false,
-        "bypass_method": null
-    },
     "npcodex_kiroxubei_tech": {
         "origin": "https://npcodex.kiroxubei.tech",
         "login_path": "/login",
@@ -199,8 +179,8 @@
         "aliyun_captcha": false,
         "bypass_method": null
     },
-    "old": {
-        "origin": "https://oldai.zeabur.app",
+    "yyds_215_im": {
+        "origin": "https://yyds.215.im",
         "login_path": "/login",
         "status_path": "/api/status",
         "auth_state_path": "/api/oauth/state",
@@ -213,14 +193,14 @@
         "github_client_id": null,
         "github_auth_path": "/api/oauth/github",
         "github_auth_redirect_path": "/oauth/**",
-        "linuxdo_client_id": "QSRbjIGtYWCdyd0SPEiXGN4HlK4k0n7Z",
+        "linuxdo_client_id": "BvCzH7KoNBVpQIfdWCgUMIGaPMOpgbwI",
         "linuxdo_auth_path": "/api/oauth/linuxdo",
         "linuxdo_auth_redirect_path": "/oauth/**",
         "aliyun_captcha": false,
         "bypass_method": null
     },
-    "xinye": {
-        "origin": "https://api.feisakura.fun",
+    "anthorpic_us_ci": {
+        "origin": "https://anthorpic.us.ci",
         "login_path": "/login",
         "status_path": "/api/status",
         "auth_state_path": "/api/oauth/state",
@@ -233,14 +213,14 @@
         "github_client_id": null,
         "github_auth_path": "/api/oauth/github",
         "github_auth_redirect_path": "/oauth/**",
-        "linuxdo_client_id": "XPXmWksr3NcH2aiz0MgqK5jtEmfdfZ0Q",
+        "linuxdo_client_id": "nNzrggkmAew2bJYxCgC2iaU6IYcaWt8S",
         "linuxdo_auth_path": "/api/oauth/linuxdo",
         "linuxdo_auth_redirect_path": "/oauth/**",
         "aliyun_captcha": false,
         "bypass_method": null
     },
-    "laoyou": {
-        "origin": "https://api.freestyle.cc.cd",
+    "free_nanohajimi_mom": {
+        "origin": "https://free.nanohajimi.mom",
         "login_path": "/login",
         "status_path": "/api/status",
         "auth_state_path": "/api/oauth/state",
@@ -253,27 +233,7 @@
         "github_client_id": null,
         "github_auth_path": "/api/oauth/github",
         "github_auth_redirect_path": "/oauth/**",
-        "linuxdo_client_id": "yCN8PmzMMcdOpuZp8UVQh7dxywofhpc2",
-        "linuxdo_auth_path": "/api/oauth/linuxdo",
-        "linuxdo_auth_redirect_path": "/oauth/**",
-        "aliyun_captcha": false,
-        "bypass_method": null
-    },
-    "fucaixie": {
-        "origin": "https://fucaixie.xyz",
-        "login_path": "/login",
-        "status_path": "/api/status",
-        "auth_state_path": "/api/oauth/state",
-        "check_in_path": "/api/user/checkin",
-        "check_in_status": true,
-        "user_info_path": "/api/user/self",
-        "topup_path": "/api/user/topup",
-        "get_cdk": null,
-        "api_user_key": "new-api-user",
-        "github_client_id": null,
-        "github_auth_path": "/api/oauth/github",
-        "github_auth_redirect_path": "/oauth/**",
-        "linuxdo_client_id": "mtlJxJCv5UcmuKz1neif4sJVmKapsu3l",
+        "linuxdo_client_id": "svkUqtRyhOJMULQ1Zfnfhvv9ALSnANhf",
         "linuxdo_auth_path": "/api/oauth/linuxdo",
         "linuxdo_auth_redirect_path": "/oauth/**",
         "aliyun_captcha": false,

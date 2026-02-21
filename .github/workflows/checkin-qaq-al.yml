@@ -1,0 +1,129 @@
+name: qaq.al 自动签到
+on:
+  schedule:
+    - cron: '0 */8 * * *'
+  workflow_dispatch:
+    inputs:
+      debug:
+        description: '调试模式 (启用后会保存截图和 HTML 日志)'
+        required: false
+        type: boolean
+
+jobs:
+  checkin:
+    permissions:
+      id-token: write
+      contents: read
+    runs-on: windows-2025
+    environment: production
+    env:
+      PYTHONIOENCODING: utf-8
+    steps:
+    - name: set beijing timezone
+      uses: szenius/set-timezone@v2.0
+      with:
+        timezoneWindows: "China Standard Time"
+
+    - uses: actions/checkout@v4
+
+    - uses: astral-sh/setup-uv@v3
+      with:
+        version: "latest"
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: 缓存 UV 依赖
+      uses: actions/cache@v4
+      id: uv-cache
+      with:
+        path: |
+          ~/.cache/uv
+          .venv
+        key: ${{ runner.os }}-uv-${{ hashFiles('pyproject.toml', 'uv.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-uv-
+
+    - name: 安装依赖
+      if: steps.uv-cache.outputs.cache-hit != 'true'
+      run: |
+        echo "缓存未命中，开始安装项目依赖..."
+        uv sync
+        echo "✅ 环境初始化完成"
+
+    - name: 获取 Camoufox 版本
+      id: camoufox-version
+      run: |
+        $version = uv run python -c "import importlib.metadata; print(importlib.metadata.version('camoufox'))"
+        echo "version=$version" >> $env:GITHUB_OUTPUT
+        echo "Camoufox version: $version"
+
+    - name: 缓存 Camoufox 浏览器
+      uses: actions/cache@v4
+      id: camoufox-cache
+      with:
+        path: ~\AppData\Local\camoufox
+        key: ${{ runner.os }}-camoufox-${{ steps.camoufox-version.outputs.version }}
+        restore-keys: |
+          ${{ runner.os }}-camoufox-
+
+    - name: 安装 Camoufox 浏览器
+      if: steps.camoufox-cache.outputs.cache-hit != 'true'
+      run: |
+        echo "缓存未命中，开始下载 Camoufox 浏览器..."
+        uv run camoufox fetch
+        echo "✅ Camoufox 浏览器安装完成"
+
+    - name: 恢复余额历史缓存
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          balance_hash_qaq_al.txt
+        key: balance-hash-qaq-al-${{ hashFiles('balance_hash_qaq_al.txt') }}
+        restore-keys: |
+          balance-hash-qaq-al-
+
+    - name: 执行签到
+      env:
+        ACCOUNTS_QAQ_AL: ${{ secrets.ACCOUNTS_QAQ_AL }}
+        PROXY: ${{ secrets.PROXY_QAQ_AL }}
+        QAQ_AL_TIER: ${{ vars.QAQ_AL_TIER || '4' }}
+        DEBUG: ${{ github.event_name == 'workflow_dispatch' && inputs.debug || vars.DEBUG || 'false' }}
+        DINGDING_WEBHOOK: ${{ secrets.DINGDING_WEBHOOK }}
+        EMAIL_USER: ${{ secrets.EMAIL_USER }}
+        EMAIL_PASS: ${{ secrets.EMAIL_PASS }}
+        EMAIL_TO: ${{ secrets.EMAIL_TO }}
+        CUSTOM_SMTP_SERVER: ${{ secrets.CUSTOM_SMTP_SERVER }}
+        PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+        SERVERPUSHKEY: ${{ secrets.SERVERPUSHKEY }}
+        FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+        WEIXIN_WEBHOOK: ${{ secrets.WEIXIN_WEBHOOK }}
+      run: |
+        # 执行签到
+        uv run python -u checkin_qaq_al/main.py
+
+    - name: 保存余额历史缓存
+      if: hashFiles('balance_hash_qaq_al.txt') != ''
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          balance_hash_qaq_al.txt
+        key: balance-hash-qaq-al-${{ hashFiles('balance_hash_qaq_al.txt') }}
+
+    - name: 保存日志
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: qaq-al-artifacts-${{ github.run_number }}
+        path: |
+          logs/
+          screenshots/
+        if-no-files-found: ignore
+        retention-days: 7
+
+    - name: 执行结果
+      if: always()
+      run: |
+        echo "qaq.al 签到任务执行完成"
+        echo "时间: $(Get-Date)"

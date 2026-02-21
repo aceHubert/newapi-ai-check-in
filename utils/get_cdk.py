@@ -10,10 +10,18 @@ CDK 获取模块
 """
 from __future__ import annotations
 
+import base64
+import hashlib
+import json
+import os
+import time
 from typing import TYPE_CHECKING, Generator, AsyncGenerator
+from urllib.parse import urlparse, parse_qs
 
+from camoufox.async_api import AsyncCamoufox
 from curl_cffi import requests as curl_requests
 
+from utils.browser_utils import take_screenshot, save_page_content_to_file
 from utils.http_utils import proxy_resolve, response_resolve
 from utils.get_headers import get_curl_cffi_impersonate
 from utils.get_cf_clearance import get_cf_clearance
@@ -221,30 +229,273 @@ def get_runawaytime_cdk(
         yield False, {"error": f"Error getting runawaytime CDK - {e}"}
 
 
-def get_x666_cdk(
+async def _get_x666_user_token(
+    account_name: str, username: str, password: str, proxy_config=None
+) -> str | None:
+    """通过 Linux.do OAuth 自动登录 up.x666.me 获取 userToken
+
+    流程：
+    1. 启动 Camoufox 浏览器
+    2. 导航到 up.x666.me，检查 localStorage 是否已有 userToken
+    3. 如果没有，调用 /api/auth/login 获取 auth_url
+    4. 导航到 connect.linux.do 授权页面，登录并授权
+    5. 等待重定向回 up.x666.me/?token=JWT_TOKEN
+    6. 从 URL 参数或 localStorage 提取 userToken
+
+    Args:
+        account_name: 账号名称（用于日志）
+        username: Linux.do 用户名
+        password: Linux.do 密码
+        proxy_config: 代理配置
+
+    Returns:
+        userToken 字符串，失败返回 None
+    """
+
+    def is_jwt_valid(token: str) -> bool:
+        """验证 JWT token 是否有效（未过期）"""
+        try:
+            parts = token.split('.')
+            if len(parts) != 3:
+                return False
+
+            # 解码 payload（添加 padding）
+            payload_b64 = parts[1]
+            padding = 4 - len(payload_b64) % 4
+            if padding != 4:
+                payload_b64 += '=' * padding
+
+            payload = json.loads(base64.b64decode(payload_b64))
+            exp = payload.get('exp')
+
+            if not exp:
+                return False
+
+            # 检查是否过期（exp 是秒级时间戳）
+            return exp > time.time()
+        except Exception:
+            return False
+
+    username_hash = hashlib.sha256(username.encode()).hexdigest()[:8]
+    cache_file_path = f"storage-states/x666_up_{username_hash}.json"
+
+    print(f"ℹ️ {account_name}: Attempting auto-login to up.x666.me via Linux.do")
+
+    try:
+        proxy_args = {}
+        if proxy_config:
+            http_proxy = proxy_resolve(proxy_config)
+            if http_proxy:
+                proxy_args["proxy"] = {"server": http_proxy} if isinstance(http_proxy, str) else http_proxy
+
+        async with AsyncCamoufox(
+            headless=False,
+            humanize=True,
+            locale="en-US",
+            os="macos",
+            config={"forceScopeAccess": True},
+            **proxy_args,
+        ) as browser:
+            storage_state = cache_file_path if os.path.exists(cache_file_path) else None
+            if storage_state:
+                print(f"ℹ️ {account_name}: Found x666 cache file, restoring storage state")
+            else:
+                print(f"ℹ️ {account_name}: No x666 cache file found, starting fresh")
+
+            context = await browser.new_context(storage_state=storage_state)
+            page = await context.new_page()
+
+            try:
+                # Step 1: 导航到 up.x666.me 并检查是否已有 userToken
+                await page.goto("https://up.x666.me/", wait_until="domcontentloaded")
+                await page.wait_for_timeout(2000)
+
+                # 检查 localStorage 中是否已有 userToken（缓存有效时）
+                existing_token = await page.evaluate("() => localStorage.getItem('userToken')")
+                if existing_token:
+                    print(f"ℹ️ {account_name}: Found existing userToken in localStorage, validating...")
+                    if is_jwt_valid(existing_token):
+                        print(f"✅ {account_name}: Cached userToken is valid")
+                        await context.storage_state(path=cache_file_path)
+                        return existing_token
+                    else:
+                        print(f"⚠️ {account_name}: Cached userToken expired, need to re-login")
+
+                # Step 2: 调用 /api/auth/login 获取 auth_url
+                print(f"ℹ️ {account_name}: No cached token, fetching auth_url from /api/auth/login")
+                auth_result = await page.evaluate("""
+                    async () => {
+                        try {
+                            const resp = await fetch('/api/auth/login');
+                            const data = await resp.json();
+                            return data.auth_url || null;
+                        } catch (e) {
+                            return null;
+                        }
+                    }
+                """)
+
+                if not auth_result:
+                    print(f"❌ {account_name}: Failed to get auth_url from /api/auth/login")
+                    await take_screenshot(page, "x666_auth_url_failed", account_name)
+                    return None
+
+                print(f"ℹ️ {account_name}: Got auth_url, navigating to Linux.do authorization page")
+
+                # Step 3: 导航到 connect.linux.do 授权页面
+                await page.goto(auth_result, wait_until="domcontentloaded")
+                await page.wait_for_timeout(3000)
+
+                current_url = page.url
+
+                # 检查是否已经被重定向回 up.x666.me（已授权过）
+                if "up.x666.me" in current_url and "token=" in current_url:
+                    print(f"✅ {account_name}: Already authorized, redirected back with token")
+                else:
+                    # 检查是否出现授权按钮（已登录 linux.do）
+                    allow_btn = await page.query_selector('a[href^="/oauth2/approve"]')
+
+                    if not allow_btn:
+                        # 未登录，需要填写用户名密码
+                        print(f"ℹ️ {account_name}: Not logged in to Linux.do, performing login")
+
+                        # 如果在 linux.do 登录页面
+                        if "linux.do" in current_url:
+                            # 可能需要先去登录页面
+                            if "/login" not in current_url:
+                                await page.goto("https://linux.do/login", wait_until="domcontentloaded")
+                                await page.wait_for_timeout(3000)
+
+                            await page.fill("#login-account-name", username)
+                            await page.wait_for_timeout(2000)
+                            await page.fill("#login-account-password", password)
+                            await page.wait_for_timeout(2000)
+                            await page.click("#login-button")
+                            await page.wait_for_timeout(10000)
+
+                            await save_page_content_to_file(
+                                page, "x666_linuxdo_login_result", account_name, prefix="x666"
+                            )
+
+                            # 登录后重新访问授权页面
+                            await page.goto(auth_result, wait_until="domcontentloaded")
+                            await page.wait_for_timeout(3000)
+                        else:
+                            # 在 connect.linux.do 页面但需要登录
+                            login_form = await page.query_selector("#login-account-name")
+                            if login_form:
+                                await page.fill("#login-account-name", username)
+                                await page.wait_for_timeout(2000)
+                                await page.fill("#login-account-password", password)
+                                await page.wait_for_timeout(2000)
+                                await page.click("#login-button")
+                                await page.wait_for_timeout(10000)
+
+                        # 再次检查授权按钮
+                        allow_btn = await page.query_selector('a[href^="/oauth2/approve"]')
+
+                    # 点击授权按钮
+                    if allow_btn:
+                        print(f"ℹ️ {account_name}: Clicking authorize button")
+                        await allow_btn.click()
+                        await page.wait_for_timeout(5000)
+
+                # Step 4: 等待重定向回 up.x666.me
+                try:
+                    await page.wait_for_url("**/up.x666.me/**", timeout=30000)
+                except Exception:
+                    pass  # 可能已经在 up.x666.me 了
+
+                await page.wait_for_timeout(3000)
+                current_url = page.url
+
+                # Step 5: 从 URL 参数提取 token
+                user_token = None
+                if "token=" in current_url:
+                    parsed = urlparse(current_url)
+                    params = parse_qs(parsed.query)
+                    token_list = params.get("token", [])
+                    if token_list:
+                        user_token = token_list[0]
+                        print(f"✅ {account_name}: Got userToken from URL parameter")
+
+                # 如果 URL 中没有，尝试从 localStorage 获取
+                if not user_token:
+                    try:
+                        await page.wait_for_timeout(3000)
+                        user_token = await page.evaluate("() => localStorage.getItem('userToken')")
+                        if user_token:
+                            print(f"✅ {account_name}: Got userToken from localStorage")
+                    except Exception:
+                        pass
+
+                if user_token:
+                    # 保存 storage_state 用于下次缓存
+                    await context.storage_state(path=cache_file_path)
+                    print(f"✅ {account_name}: Storage state saved for x666 up")
+                    return user_token
+                else:
+                    print(f"❌ {account_name}: Failed to obtain userToken from up.x666.me")
+                    await take_screenshot(page, "x666_token_failed", account_name)
+                    return None
+
+            except Exception as e:
+                print(f"❌ {account_name}: Error during x666 auto-login: {e}")
+                await take_screenshot(page, "x666_auto_login_error", account_name)
+                return None
+            finally:
+                await page.close()
+                await context.close()
+
+    except Exception as e:
+        print(f"❌ {account_name}: Failed to launch browser for x666 auto-login: {e}")
+        return None
+
+
+async def get_x666_cdk(
     account_config: "AccountConfig",
-) -> Generator[tuple[bool, dict], None, None]:
+) -> AsyncGenerator[tuple[bool, dict], None]:
     """执行 x666 每日抽奖（直接充值到账户）
 
     通过 up.x666.me 抽奖，奖励直接充值到账户，不返回 CDK
     此函数作为 get_cdk 使用，成功时返回空 code 表示不需要充值
 
+    支持两种方式获取 access_token：
+    1. 手动配置 access_token（向后兼容）
+    2. 通过 linux.do 账号自动登录 up.x666.me 获取 userToken
+
     Args:
-        account_config: 账号配置对象，需要包含 access_token 在 extra 中
+        account_config: 账号配置对象
 
     Yields:
         tuple[bool, dict]: (True, {"code": ""}) 成功（不需要充值），(False, {"error": "msg"}) 失败
     """
     account_name = account_config.get_display_name()
-    access_token = account_config.get("access_token")
-    proxy = account_config.proxy or account_config.get("global_proxy")
+    proxy_config = account_config.proxy or account_config.get("global_proxy")
 
+    # 1. 优先使用手动配置的 access_token（向后兼容）
+    access_token = account_config.get("access_token")
+
+    # 2. 如果没有手动配置，尝试通过 linux.do 自动登录获取
     if not access_token:
-        print(f"❌ {account_name}: access_token not found in account config")
-        yield False, {"error": "access_token not found in account config"}
+        linux_do_accounts = account_config.linux_do
+        if linux_do_accounts and isinstance(linux_do_accounts, list) and len(linux_do_accounts) > 0:
+            ld_account = linux_do_accounts[0]
+            access_token = await _get_x666_user_token(
+                account_name, ld_account.username, ld_account.password, proxy_config
+            )
+        else:
+            print(f"❌ {account_name}: No access_token and no linux.do accounts configured")
+            yield False, {"error": "access_token not found and no linux.do accounts available"}
+            return
+
+    # 3. 自动登录也失败则报错
+    if not access_token:
+        print(f"❌ {account_name}: Failed to obtain access_token via auto-login")
+        yield False, {"error": "Failed to obtain access_token via auto-login"}
         return
 
-    http_proxy = proxy_resolve(proxy)
+    http_proxy = proxy_resolve(proxy_config)
 
     try:
         session = curl_requests.Session(proxy=http_proxy, timeout=30)

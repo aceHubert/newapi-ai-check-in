@@ -252,12 +252,18 @@ class LinuxDoSignIn:
                     # 标记是否检测到 Cloudflare 验证页面
                     cloudflare_challenge_detected = False
 
-                    try:
-                        # 使用配置的 OAuth 回调路径匹配模式
-                        redirect_pattern = self.provider_config.get_linuxdo_auth_redirect_pattern()
-                        print(f"ℹ️ {self.account_name}: Waiting for redirect to: {redirect_pattern}")
-                        await page.wait_for_url(redirect_pattern, timeout=30000)
-                        await page.wait_for_timeout(5000)
+                    try:                  
+                        # 先检查是否已跳转到 /console/token（Cloudflare 挑战等待期间可能已完成跳转）
+                        console_token_pattern = f"**{self.provider_config.origin}/console/token**"
+                        try:
+                            await page.wait_for_url(console_token_pattern, timeout=3000)
+                            print(f"ℹ️ {self.account_name}: Already redirected to /console/token, skipping redirect_pattern wait")
+                        except Exception:
+                            # 未跳转到 /console/token，使用配置的 redirect_pattern 等待
+                            redirect_pattern = self.provider_config.get_linuxdo_auth_redirect_pattern()
+                            print(f"ℹ️ {self.account_name}: Waiting for redirect to: {redirect_pattern}")
+                            await page.wait_for_url(redirect_pattern, timeout=30000)
+                            await page.wait_for_timeout(5000)
 
                         # 检查是否在 Cloudflare 验证页面
                         page_title = await page.title()
