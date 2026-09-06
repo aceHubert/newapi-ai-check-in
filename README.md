@@ -7,9 +7,6 @@ Affs:
 - [WONG](https://wzw.pp.ua/register?aff=N6Q9)
 - [薄荷 API](https://x666.me/register?aff=dgzt)
 - [Huan API](https://ai.huan666.de/register?aff=qEnU)
-- [KFC API](https://kfc-api.sxxe.net/register?aff=xPnf)
-- [HotaruApi](https://hotaruapi.com/register?aff=q6xq)
-- [Elysiver](https://elysiver.h-e.top/register?aff=5JsA)
 
 其它使用 `newapi.ai` 功能相似, 可自定义环境变量 `PROVIDERS` 支持或 `PR` 到仓库。
 
